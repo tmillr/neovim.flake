@@ -14,21 +14,34 @@
 #
 {
   nixpkgs,
-  # Creates a wrapped neovim drv. Defined in `pkgs/applications/editors/neovim/wrapper.nixwrapper.nix`
+  # Function that creates a wrapped neovim drv. Defined in
+  # `pkgs/applications/editors/neovim/wrapper.nix`.
   # wrapNeovimUnstable,
+  #
   # neovim-unwrapped,
   # neovimUtils,
   # vimPlugins,
-  # Merged with return val of `makeNeovimConfig` and passed to `wrapNeovimUnstable`
+  #
+  # Merged with return val of `makeNeovimConfig` and passed to
+  # `wrapNeovimUnstable`. `makeNeovimConfig` is a utility fn/constructor which
+  # constructs the arguments to `wrapNeovimUnstable`.
   wrapNeovimConfig ? {wrapRc = false;},
+  #
+  # List of plugins
   plugins ? null,
+  #
   # Plugins not in nixpkgs
   # customPlugins ? {},
 }:
-nixpkgs.wrapNeovimUnstable nixpkgs.neovim-unwrapped (nixpkgs.neovimUtils.makeNeovimConfig {
+nixpkgs.wrapNeovimUnstable nixpkgs.neovim-unwrapped (
+  nixpkgs.neovimUtils.makeNeovimConfig {
     # customRC = lib.debug.traceVal vimrc;
     # see examples below how to use custom packages
-    inherit plugins;
+    plugins = builtins.map (el: {optional = false;} // el) (
+      if builtins.isList plugins
+      then plugins
+      else assert builtins.isAttrs plugins; builtins.attrValues plugins
+    );
     # plugins =
     #   plugins
     #   ++ nixpkgs.lib.attrsets.foldlAttrs (acc: k: v:
@@ -41,4 +54,5 @@ nixpkgs.wrapNeovimUnstable nixpkgs.neovim-unwrapped (nixpkgs.neovimUtils.makeNeo
     #     ]) []
     #   customPlugins;
   }
-  // wrapNeovimConfig)
+  // wrapNeovimConfig
+)

@@ -6,7 +6,7 @@
 
   inputs = {
     # TODO:
-    # Colorschemes {{{
+    # Colorschemes
     # (Plugin {
     #   owner = "sainnhe";
     #   repo = "edge";
@@ -16,8 +16,6 @@
     #   owner = "gerardbm";
     #   repo = "vim-atomic";
     # })
-
-    # }}}
 
     # Color scheme used in the GIFs!
 
@@ -33,8 +31,6 @@
     # Changes the working directory to the project root when you open a file
     # or directory
     # let g:rooter_patterns = ['.git', '_darcs', '.hg', '.bzr', '.svn', 'Makefile', 'package.json', 'Cargo.toml']
-
-    # let g:undotree_ShortIndicators = 1
 
     # These aren't shipped by Nix, so they must be specified either here or in
     # a flake registry.
@@ -65,23 +61,32 @@
     ...
   }: let
     fu = import flake-utils;
+    inherit (nixpkgs) lib;
   in
+    #{
+    # neovim = import ./nvim.nix ({inherit nixpkgs;} // (import ./plugins.nix (args // {inherit nixpkgs;})));
+    #}
+    # // fu.eachSystem fu.allSystems (system:
     fu.eachSystem fu.allSystems (system:
       if
-        system
-        == "m68k-linux"
-        || system == "microblaze-linux"
-        || system == "microblazeel-linux"
-        || system == "powerpc64-linux"
-        || system == "riscv32-linux"
-        || system == "s390-linux"
-        || system == "s390x-linux"
+        lib.any (excl: excl == system) [
+          "m68k-linux"
+          "microblaze-linux"
+          "microblazeel-linux"
+          "powerpc64-linux"
+          "riscv32-linux"
+          "s390-linux"
+          "s390x-linux"
+        ]
       then {}
       else let
         nixpkgs = import args.nixpkgs {inherit system;};
+        plugins = import ./plugins.nix (args // {inherit nixpkgs;});
       in {
         packages = rec {
-          neovim = import ./nvim.nix ({inherit nixpkgs;} // (import ./plugins.nix (args // {inherit nixpkgs;})));
+          # plugins = import ./plugins.nix (args // {inherit nixpkgs;});
+          # plugins = import ./plugins.nix (args // {inherit nixpkgs;});
+          neovim = lib.makeOverridable import ./nvim.nix ({inherit nixpkgs;} // plugins);
           default = neovim;
         };
       });
