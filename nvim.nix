@@ -32,9 +32,12 @@
   #
   # Plugins not in nixpkgs
   # customPlugins ? {},
+  #
+  extraLuaPackages ? null,
 }:
 nixpkgs.wrapNeovimUnstable nixpkgs.neovim-unwrapped (
   nixpkgs.neovimUtils.makeNeovimConfig {
+    inherit extraLuaPackages;
     # customRC = lib.debug.traceVal vimrc;
     # see examples below how to use custom packages
     plugins = builtins.map (el: {optional = false;} // el) (
