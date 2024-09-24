@@ -14,11 +14,12 @@ with vimPlugins; {
   };
 
   nvim-treesitter = {
+    # plugin = builtins.trace "${(builtins.elemAt nvim-treesitter.withAllGrammars.dependencies 0)}" nvim-treesitter.withAllGrammars;
     plugin = nvim-treesitter.withAllGrammars;
   };
-  playground = {
-    plugin = playground;
-  };
+  # playground = {
+  #   plugin = playground;
+  # };
   fugitive = {
     plugin = fugitive;
   };
@@ -118,6 +119,13 @@ with vimPlugins; {
     plugin = cmp_luasnip;
   };
 
+  copilot-lua = {
+    plugin = copilot-lua;
+  };
+  CopilotChat-nvim = {
+    plugin = CopilotChat-nvim;
+  };
+
   vim-airline = {
     plugin = vim-airline;
   };
@@ -131,6 +139,9 @@ with vimPlugins; {
   };
   telescope-zf-native-nvim = {
     plugin = telescope-zf-native-nvim;
+  };
+  telescope-symbols-nvim = {
+    plugin = telescope-symbols-nvim;
   };
   telescope-ui-select-nvim = {
     plugin = telescope-ui-select-nvim;

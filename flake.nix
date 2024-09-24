@@ -122,31 +122,51 @@
 
         neovim = final: prev: let
           inherit (final) neovimUtils lib;
-          plugins = import ./plugins.nix {inherit (final.pkgsHostTarget) vimPlugins;};
+          plugins' = import ./plugins.nix {inherit (final.pkgsHostTarget) vimPlugins;};
+          plugins = map (el: {optional = false;} // el) (
+            if isList plugins'
+            then plugins'
+            else assert isAttrs plugins'; attrValues plugins'
+          );
+
           neovimConfig = {
             wrapRc = false;
-            extraLuaPackages = luapkgs: with luapkgs; [lpeg busted middleclass];
+            extraLuaPackages = luapkgs:
+              with luapkgs; [
+                lpeg
+                busted
+                middleclass
+                tiktoken_core
+              ];
           };
+
           wrapperConfig = lib.makeOverridable neovimUtils.makeNeovimConfig (neovimConfig
             // {
-              plugins = map (el: {optional = false;} // el) (
-                if isList plugins
-                then plugins
-                else assert isAttrs plugins; attrValues plugins
-              );
+              inherit plugins;
             });
         in {
           neovim =
             (final.wrapNeovimUnstable
               final.neovim-unwrapped
               wrapperConfig)
+            # (lib.traceValSeq wrapperConfig))
             .overrideAttrs (prev: {
               # Use passthru for plugins, because overriding it doesn't cause
               # a proper rebuild.
-              passthru = prev.passthru or {} // {inherit plugins;};
+              passthru = prev.passthru or {} // {inherit plugins wrapperConfig;};
             });
 
-          nbusted =
+          nbusted = let
+            lua = ''
+              assert(
+                  coroutine.resume(
+                      coroutine.create(function()
+                          return require 'busted.runner' { standalone = false }
+                      end)
+                  )
+              )
+            '';
+          in
             final.writeShellScriptBin "nbusted"
             ''
               exec ${lib.getExe final.neovim} \
@@ -160,6 +180,8 @@
 
         default = self.overlays.neovim;
       };
+
+      lib = import ./lib.nix nixpkgs;
     };
 }
 # TODO:
