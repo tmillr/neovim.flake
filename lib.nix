@@ -15,9 +15,9 @@ with builtins; rec {
       plugins' = map normalize plugins;
     in
       lib.throwIfNot
-      (lib.allUnique (map (p: p.plugin.pname) plugins')) "duplicated plugins"
+      (lib.allUnique (map (p: lib.getName p.plugin) plugins')) "duplicated plugins"
       listToAttrs (map (p: {
-          name = p.plugin.pname;
+          name = lib.getName p.plugin;
           value = p;
         })
         plugins');
@@ -25,13 +25,13 @@ with builtins; rec {
     attrValues (lib.recursiveUpdateUntil (path: l: r: lib.last path == "plugin") old deps);
 
   fixupLuaPackages = luaDeps: f: lpkgs: let
-    names = map (dep: dep.pname) deps;
+    names = map (dep: lib.getName dep) deps;
     deps =
       if isFunction luaDeps
       then luaDeps lpkgs
       else luaDeps;
   in
-    filter (pkg: !(elem pkg.pname names)) (f lpkgs) ++ deps;
+    filter (pkg: !(elem (lib.getName pkg) names)) (f lpkgs) ++ deps;
 
   # Make a neovim for to be used for both editing and for developing a
   # particular plugin (live usage/feedback while editing). Accepts a
