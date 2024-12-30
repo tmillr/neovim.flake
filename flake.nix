@@ -118,7 +118,7 @@
             telescope-paths-nvim = final.vimUtils.buildVimPlugin {
               name = "telescope-paths-nvim";
               src = telescope-paths-nvim;
-              dependencies = [final'.telescope-nvim];
+              dependencies = with final'; [plenary-nvim telescope-nvim];
             };
             one-small-step-for-vimkind = final.vimUtils.buildVimPlugin {
               name = "one-small-step-for-vimkind";
