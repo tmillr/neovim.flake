@@ -96,6 +96,12 @@
         #             ++ lib.optional (llua != null) llua)}
         #         '';
         # };
+
+        # checks = {
+        #   check-queries = self.packages.${system}.neovim.plugins.nvim-treesitter.plugin.passthru.tests.check-queries.overrideAttrs (_: {
+        #     nativeBuildInputs = [self.packages.${system}.neovim];
+        #   });
+        # };
       })
     // {
       overlays = {
@@ -112,6 +118,7 @@
             telescope-paths-nvim = final.vimUtils.buildVimPlugin {
               name = "telescope-paths-nvim";
               src = telescope-paths-nvim;
+              dependencies = [final'.telescope-nvim];
             };
             one-small-step-for-vimkind = final.vimUtils.buildVimPlugin {
               name = "one-small-step-for-vimkind";
