@@ -39,7 +39,7 @@
     github-nvim-theme,
     one-small-step-for-vimkind,
   }: let
-    inherit (builtins) attrValues isAttrs isList elem map;
+    inherit (builtins) attrValues isAttrs isList elem map path;
     fu = import flake-utils;
   in
     #{
@@ -109,7 +109,11 @@
           vimPlugins = prev.vimPlugins.extend (final': prev': {
             sos-nvim = final.vimUtils.buildVimPlugin {
               name = "sos-nvim";
-              src = sos-nvim;
+              src = path {
+                name = "sos-nvim-source";
+                path = sos-nvim;
+                filter = path: type: !elem (baseNameOf path) [".luarc.json"];
+              };
             };
             github-nvim-theme = final.vimUtils.buildVimPlugin {
               name = "github-nvim-theme";
